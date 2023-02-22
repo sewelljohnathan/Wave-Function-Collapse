@@ -4,7 +4,7 @@
 #include <time.h>
 
 #define WORLD_W 50
-#define WORLD_H 10
+#define WORLD_H 25
 #define TILES 4
 
 typedef struct Potential {
@@ -18,7 +18,7 @@ typedef struct World {
 
 void collapseLocal(int collapseTarget, int offsetX, int offsetY, World *world);
 void collapse(World *world);
-char potentialMapping(Potential potential);
+char* potentialMapping(Potential potential);
 
 int main() {
 
@@ -65,27 +65,27 @@ int main() {
     for (int y = 0; y < WORLD_H; y++) {
         char worldRow[WORLD_W];
         for (int x = 0; x < WORLD_W; x++) {
-            worldRow[x] = potentialMapping(world.map[y][x]);
+            printf("%s ", potentialMapping(world.map[y][x]));
+            //worldRow[x] = potentialMapping(world.map[y][x]);
         }
-        printf("%s\n", worldRow);
+        printf("\e[0m\n");
     }
-    
 
     return 0;
 }
 
-char potentialMapping(Potential potential) {
+char* potentialMapping(Potential potential) {
     if (potential.options[0]) {
-        return ' ';
+        return "\e[104m";
     }
     if (potential.options[1]) {
-        return '-';
+        return "\e[43m";
     }
     if (potential.options[2]) {
-        return '=';
+        return "\e[102m";
     }
     if (potential.options[3]) {
-        return '#';
+        return "\e[42m";
     }
 }
 
