@@ -9,6 +9,7 @@
 
 typedef struct Potential {
     int options[TILES];
+    int collapsedValue;
 } Potential;
 
 typedef struct World {
@@ -35,6 +36,7 @@ int main() {
             for (int x = 0; x < WORLD_W; x++) {
                 for (int i = 0; i < TILES; i++) {
                     world.map[y][x].options[i] = 1;
+                    world.map[y][x].collapsedValue = -1;
                 }
             }
         }
@@ -108,6 +110,75 @@ void collapseLocal(int collapseTarget, int y, int x, World *world) {
     }
 }
 
+int getCollapseValue(World *world, int y, int x) {
+    
+    // Cannot collapse to something that is already decided to be impossible (0)
+    int randCollapse;
+    do {
+        
+        // Give all options an equal possibility
+        int weights[TILES];
+        for (int i = 0; i < TILES; i++) {
+            weights[i] = 6;
+        }
+
+        // Add a bias for a neighboring collapsed value
+        if (y > 0) {
+            int neighborValue = world->map[y-1][x].collapsedValue;
+            if (neighborValue != -1) {
+                weights[neighborValue] += 1;
+            }
+        }
+        if (y < WORLD_H - 1) {
+            int neighborValue = world->map[y+1][x].collapsedValue;
+            if (neighborValue != -1) {
+                weights[neighborValue] += 1;
+            }
+        }
+        if (x > 0) {
+            int neighborValue = world->map[y][x-1].collapsedValue;
+            if (neighborValue != -1) {
+                weights[neighborValue] += 1;
+            }
+        }
+        if (x < WORLD_W - 1) {
+            int neighborValue = world->map[y][x+1].collapsedValue;
+            if (neighborValue != -1) {
+                weights[neighborValue] += 1;
+            }
+        }
+
+        // Get the total of all weights
+        int totalWeight = 0;
+        for (int i = 0; i < TILES; i++) {
+            totalWeight += weights[i];   
+        }
+
+        // Get an ascending summed list of weights
+        // I.e. If the weights are {2, 1, 2, 3}, preppedWeights is {2, 3, 5, 8}
+        int preppedWeights[TILES];
+        for (int i = 0; i < TILES; i++) {
+            preppedWeights[i] = 0;
+            for (int j = 0; j <= i; j++) {
+                preppedWeights[i] += weights[j];
+            }
+        }
+
+        int r = rand() % totalWeight;
+        for (int i = 0; i < TILES; i++) {
+            if (r <= preppedWeights[i]) {
+                randCollapse = i;
+                break;
+            }
+        }
+
+        //randCollapse = rand() % TILES;
+    } while (world->map[y][x].options[randCollapse] == 0);
+
+    return randCollapse;
+    
+}
+
 void collapse(World *world) {
 
     // Find the lowest entropy cell
@@ -138,34 +209,28 @@ void collapse(World *world) {
         return;
     }
 
-    // Cannot collapse to something that is already decided to be impossible (0)
-    int randCollapse;
-    do {
-        int r = (double) rand() / (double) RAND_MAX;
-        randCollapse = rand() % TILES;
-    } while (world->map[lowestY][lowestX].options[randCollapse] == 0);
-    
     // Collapse
+    int collapseValue = getCollapseValue(world, lowestY, lowestX);
     for (int i = 0; i < TILES; i++) {
-        if (i == randCollapse) {
+        if (i == collapseValue) {
             continue;
         }
         world->map[lowestY][lowestX].options[i] = 0;
-        
     }
+    world->map[lowestY][lowestX].collapsedValue = collapseValue;
 
     // Collapse surroundings
     if (lowestY > 0) {
-        collapseLocal(randCollapse, lowestY-1, lowestX, world);
+        collapseLocal(collapseValue, lowestY-1, lowestX, world);
     }
     if (lowestY < WORLD_H - 1) {
-        collapseLocal(randCollapse, lowestY+1, lowestX, world);
+        collapseLocal(collapseValue, lowestY+1, lowestX, world);
     }
     if (lowestX > 0) {
-        collapseLocal(randCollapse, lowestY, lowestX-1, world);
+        collapseLocal(collapseValue, lowestY, lowestX-1, world);
     }
     if (lowestX < WORLD_W - 1) {
-        collapseLocal(randCollapse, lowestY, lowestX+1, world);
+        collapseLocal(collapseValue, lowestY, lowestX+1, world);
     }
 
     collapse(world);
