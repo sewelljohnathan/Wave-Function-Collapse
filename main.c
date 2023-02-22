@@ -65,10 +65,8 @@ int main() {
 
     // Display
     for (int y = 0; y < WORLD_H; y++) {
-        char worldRow[WORLD_W];
         for (int x = 0; x < WORLD_W; x++) {
             printf("%s ", potentialMapping(world.map[y][x]));
-            //worldRow[x] = potentialMapping(world.map[y][x]);
         }
         printf("\e[0m\n");
     }
@@ -119,32 +117,20 @@ int getCollapseValue(World *world, int y, int x) {
         // Give all options an equal possibility
         int weights[TILES];
         for (int i = 0; i < TILES; i++) {
-            weights[i] = 6;
+            weights[i] = 3;
         }
 
         // Add a bias for a neighboring collapsed value
-        if (y > 0) {
-            int neighborValue = world->map[y-1][x].collapsedValue;
-            if (neighborValue != -1) {
-                weights[neighborValue] += 1;
-            }
-        }
-        if (y < WORLD_H - 1) {
-            int neighborValue = world->map[y+1][x].collapsedValue;
-            if (neighborValue != -1) {
-                weights[neighborValue] += 1;
-            }
-        }
-        if (x > 0) {
-            int neighborValue = world->map[y][x-1].collapsedValue;
-            if (neighborValue != -1) {
-                weights[neighborValue] += 1;
-            }
-        }
-        if (x < WORLD_W - 1) {
-            int neighborValue = world->map[y][x+1].collapsedValue;
-            if (neighborValue != -1) {
-                weights[neighborValue] += 1;
+        int dyArr[] = {-1, -1, -1,  0,  0,  1,  1,  1};
+        int dxArr[] = {-1,  0,  1, -1,  1, -1,  0,  1};
+        for (int i = 0; i < 8; i++) {
+            int dy = dyArr[i];
+            int dx = dxArr[i];
+            if (y+dy >= 0 && y+dy <= WORLD_H - 1 && x+dx >= 0 && x+dx <= WORLD_W - 1) {
+                int neighborValue = world->map[y+dy][x+dx].collapsedValue;
+                if (neighborValue != -1) {
+                    weights[neighborValue] += 1;
+                }
             }
         }
 
@@ -219,18 +205,15 @@ void collapse(World *world) {
     }
     world->map[lowestY][lowestX].collapsedValue = collapseValue;
 
-    // Collapse surroundings
-    if (lowestY > 0) {
-        collapseLocal(collapseValue, lowestY-1, lowestX, world);
-    }
-    if (lowestY < WORLD_H - 1) {
-        collapseLocal(collapseValue, lowestY+1, lowestX, world);
-    }
-    if (lowestX > 0) {
-        collapseLocal(collapseValue, lowestY, lowestX-1, world);
-    }
-    if (lowestX < WORLD_W - 1) {
-        collapseLocal(collapseValue, lowestY, lowestX+1, world);
+    // Propagate to neighbors
+    int dyArr[] = {-1, -1, -1,  0,  0,  1,  1,  1};
+    int dxArr[] = {-1,  0,  1, -1,  1, -1,  0,  1};
+    for (int i = 0; i < 8; i++) {
+        int localY = lowestY + dyArr[i];
+        int localX = lowestX + dxArr[i];
+        if (localY >= 0 && localY <= WORLD_H - 1 && localX >= 0 && localX <= WORLD_W - 1) {
+            collapseLocal(collapseValue, localY, localX, world);
+        }
     }
 
     collapse(world);
