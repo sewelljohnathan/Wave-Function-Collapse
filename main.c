@@ -5,7 +5,7 @@
 
 #define WORLD_W 50
 #define WORLD_H 10
-#define TILES 3
+#define TILES 4
 
 typedef struct Potential {
     int options[TILES];
@@ -27,18 +27,39 @@ int main() {
 
     // Create the world
     World world;
+    int isValidWorld;
+    do {
 
-    // Initialize all grid potentials to 1
-    for (int y = 0; y < WORLD_H; y++) {
-        for (int x = 0; x < WORLD_W; x++) {
-            for (int i = 0; i < TILES; i++) {
-                world.map[y][x].options[i] = 1;
+        // Initialize all grid potentials to 1
+        for (int y = 0; y < WORLD_H; y++) {
+            for (int x = 0; x < WORLD_W; x++) {
+                for (int i = 0; i < TILES; i++) {
+                    world.map[y][x].options[i] = 1;
+                }
             }
         }
-    }
 
-    // Collapse
-    collapse(&world);
+        // Collapse
+        collapse(&world);
+
+        // Check validity
+        isValidWorld = 1;
+        for (int y = 0; y < WORLD_H; y++) {
+            for (int x = 0; x < WORLD_W; x++) {
+                
+                // Entropy should be 1 for all cells if collapsed correctly
+                int entropy = 0;
+                for (int i = 0; i < TILES; i++) {
+                    entropy += world.map[y][x].options[i];
+                }
+
+                if (entropy == 0) {
+                    isValidWorld = 0;
+                }
+            }
+        }
+
+    } while (!isValidWorld);
 
     // Display
     for (int y = 0; y < WORLD_H; y++) {
@@ -61,6 +82,9 @@ char potentialMapping(Potential potential) {
         return '-';
     }
     if (potential.options[2]) {
+        return '=';
+    }
+    if (potential.options[3]) {
         return '#';
     }
 }
@@ -69,9 +93,17 @@ void collapseLocal(int collapseTarget, int y, int x, World *world) {
     switch (collapseTarget) {
         case 0:
             world->map[y][x].options[2] = 0;
+            world->map[y][x].options[3] = 0;
+        break;
+        case 1:
+            world->map[y][x].options[3] = 0;
         break;
         case 2:
             world->map[y][x].options[0] = 0;
+        break;
+        case 3:
+            world->map[y][x].options[0] = 0;
+            world->map[y][x].options[1] = 0;
         break;
     }
 }
