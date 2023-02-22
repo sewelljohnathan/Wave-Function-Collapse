@@ -3,7 +3,8 @@
 #include <stdlib.h>
 #include <time.h>
 
-#define WORLD_SIZE 20
+#define WORLD_W 50
+#define WORLD_H 10
 #define TILES 3
 
 typedef struct Potential {
@@ -11,7 +12,7 @@ typedef struct Potential {
 } Potential;
 
 typedef struct World {
-    Potential map[WORLD_SIZE][WORLD_SIZE];
+    Potential map[WORLD_H][WORLD_W];
 } World;
 
 
@@ -28,8 +29,8 @@ int main() {
     World world;
 
     // Initialize all grid potentials to 1
-    for (int y = 0; y < WORLD_SIZE; y++) {
-        for (int x = 0; x < WORLD_SIZE; x++) {
+    for (int y = 0; y < WORLD_H; y++) {
+        for (int x = 0; x < WORLD_W; x++) {
             for (int i = 0; i < TILES; i++) {
                 world.map[y][x].options[i] = 1;
             }
@@ -40,9 +41,9 @@ int main() {
     collapse(&world);
 
     // Display
-    for (int y = 0; y < WORLD_SIZE; y++) {
-        char worldRow[WORLD_SIZE];
-        for (int x = 0; x < WORLD_SIZE; x++) {
+    for (int y = 0; y < WORLD_H; y++) {
+        char worldRow[WORLD_W];
+        for (int x = 0; x < WORLD_W; x++) {
             worldRow[x] = potentialMapping(world.map[y][x]);
         }
         printf("%s\n", worldRow);
@@ -82,8 +83,8 @@ void collapse(World *world) {
     int lowestY = 0;
     int lowestX = 0;
     int foundCell = 0;
-    for (int y = 0; y < WORLD_SIZE; y++) {
-        for (int x = 0; x < WORLD_SIZE; x++) {
+    for (int y = 0; y < WORLD_H; y++) {
+        for (int x = 0; x < WORLD_W; x++) {
 
             int entropy = 0;
             for (int i = 0; i < TILES; i++) {
@@ -125,13 +126,13 @@ void collapse(World *world) {
     if (lowestY > 0) {
         collapseLocal(randCollapse, lowestY-1, lowestX, world);
     }
-    if (lowestY < WORLD_SIZE - 1) {
+    if (lowestY < WORLD_H - 1) {
         collapseLocal(randCollapse, lowestY+1, lowestX, world);
     }
     if (lowestX > 0) {
         collapseLocal(randCollapse, lowestY, lowestX-1, world);
     }
-    if (lowestX < WORLD_SIZE - 1) {
+    if (lowestX < WORLD_W - 1) {
         collapseLocal(randCollapse, lowestY, lowestX+1, world);
     }
 
