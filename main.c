@@ -115,21 +115,20 @@ int getCollapseValue(World *world, int y, int x) {
     do {
         
         // Give all options an equal possibility
-        int weights[TILES];
-        for (int i = 0; i < TILES; i++) {
-            weights[i] = 3;
-        }
+        int weights[TILES] = {8, 12, 15, 13};
 
         // Add a bias for a neighboring collapsed value
         int dyArr[] = {-1, -1, -1,  0,  0,  1,  1,  1};
         int dxArr[] = {-1,  0,  1, -1,  1, -1,  0,  1};
+        //int dyArr[] = {-1, 0, 0, 1};
+        //int dxArr[] = {0, -1, 1, 0};
         for (int i = 0; i < 8; i++) {
             int dy = dyArr[i];
             int dx = dxArr[i];
             if (y+dy >= 0 && y+dy <= WORLD_H - 1 && x+dx >= 0 && x+dx <= WORLD_W - 1) {
                 int neighborValue = world->map[y+dy][x+dx].collapsedValue;
                 if (neighborValue != -1) {
-                    weights[neighborValue] += 1;
+                    weights[neighborValue] += 2;
                 }
             }
         }
