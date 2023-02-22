@@ -7,7 +7,7 @@
 #define TILES 3
 
 typedef struct Potential {
-    int potential[TILES];
+    int options[TILES];
 } Potential;
 
 typedef struct World {
@@ -31,7 +31,7 @@ int main() {
     for (int y = 0; y < WORLD_SIZE; y++) {
         for (int x = 0; x < WORLD_SIZE; x++) {
             for (int i = 0; i < TILES; i++) {
-                world.map[y][x].potential[i] = 1;
+                world.map[y][x].options[i] = 1;
             }
         }
     }
@@ -53,13 +53,13 @@ int main() {
 }
 
 char potentialMapping(Potential potential) {
-    if (potential.potential[0]) {
+    if (potential.options[0]) {
         return ' ';
     }
-    if (potential.potential[1]) {
+    if (potential.options[1]) {
         return '-';
     }
-    if (potential.potential[2]) {
+    if (potential.options[2]) {
         return '#';
     }
 }
@@ -67,10 +67,10 @@ char potentialMapping(Potential potential) {
 void collapseLocal(int collapseTarget, int y, int x, World *world) {
     switch (collapseTarget) {
         case 0:
-            world->map[y][x].potential[2] = 0;
+            world->map[y][x].options[2] = 0;
         break;
         case 2:
-            world->map[y][x].potential[0] = 0;
+            world->map[y][x].options[0] = 0;
         break;
     }
 }
@@ -87,7 +87,7 @@ void collapse(World *world) {
 
             int entropy = 0;
             for (int i = 0; i < TILES; i++) {
-                entropy += world->map[y][x].potential[i];   
+                entropy += world->map[y][x].options[i];   
             }
 
             if (entropy < lowestEntropy && entropy > 1) {
@@ -110,14 +110,14 @@ void collapse(World *world) {
     do {
         int r = (double) rand() / (double) RAND_MAX;
         randCollapse = rand() % TILES;
-    } while (world->map[lowestY][lowestX].potential[randCollapse] == 0);
+    } while (world->map[lowestY][lowestX].options[randCollapse] == 0);
     
     // Collapse
     for (int i = 0; i < TILES; i++) {
         if (i == randCollapse) {
             continue;
         }
-        world->map[lowestY][lowestX].potential[i] = 0;
+        world->map[lowestY][lowestX].options[i] = 0;
         
     }
 
