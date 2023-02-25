@@ -4,8 +4,8 @@
 #include <time.h>
 #include "main.h"
 
-void collapseLocal(int collapseTarget, int offsetX, int offsetY, World *world);
 void collapse(World *world);
+void propagateCollapse(int collapseTarget, int offsetX, int offsetY, World *world);
 char* getColor(int collapseValue);
 
 int main() {
@@ -52,7 +52,7 @@ char* getColor(int val) {
     }
 }
 
-void collapseLocal(int collapseTarget, int y, int x, World *world) {
+void propagateCollapse(int collapseTarget, int y, int x, World *world) {
 
     for (int i = 0; i < TILE_COUNT; i++) {
 
@@ -140,7 +140,7 @@ void collapse(World *world) {
     world->map[lowestY][lowestX].collapsedValue = collapseValue;
 
     // Propagate to neighbors
-    collapseLocal(collapseValue, lowestY, lowestX, world);
+    propagateCollapse(collapseValue, lowestY, lowestX, world);
 
     // Collapse new world
     collapse(world);
