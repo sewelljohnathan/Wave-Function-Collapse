@@ -4,7 +4,7 @@
 #include <time.h>
 #include "main.h"
 
-void collapse(World *world);
+int collapse(World *world);
 void propagateCollapse(int collapseTarget, int offsetX, int offsetY, World *world);
 char* getColor(int collapseValue);
 
@@ -17,18 +17,21 @@ int main() {
     World world;
     int isValidWorld;
 
-    // Initialize all grid potentials to 1
-    for (int y = 0; y < WORLD_H; y++) {
-        for (int x = 0; x < WORLD_W; x++) {
-            for (int i = 0; i < TILE_COUNT; i++) {
-                world.map[y][x].options[i] = 1;
-                world.map[y][x].collapsedValue = -1;
+    do {
+
+        // Initialize all grid potentials to 1
+        for (int y = 0; y < WORLD_H; y++) {
+            for (int x = 0; x < WORLD_W; x++) {
+                for (int i = 0; i < TILE_COUNT; i++) {
+                    world.map[y][x].options[i] = 1;
+                    world.map[y][x].collapsedValue = -1;
+                }
             }
         }
-    }
 
-    // Collapse
-    collapse(&world);
+    } while (collapse(&world));
+
+    
 
     // Display
     for (int y = 0; y < WORLD_H; y++) {
@@ -95,7 +98,7 @@ void propagateCollapse(int collapseTarget, int y, int x, World *world) {
     }
 }
 
-void collapse(World *world) {
+int collapse(World *world) {
 
     // Find the lowest entropy cell
     int lowestEntropy = TILE_COUNT+1;
@@ -110,7 +113,13 @@ void collapse(World *world) {
                 entropy += world->map[y][x].options[i];   
             }
 
-            if (entropy < lowestEntropy && world->map[y][x].collapsedValue == -1) {
+            // Check if world is valid
+            if (entropy == 0 && world->map[y][x].collapsedValue == -1) {
+                return 1;
+            }
+
+            // Store the lowest entropy cell
+            if (entropy < lowestEntropy && world->map[y][x].collapsedValue == -1 && entropy > 0) {
                 lowestY = y;
                 lowestX = x;
                 lowestEntropy = entropy;
@@ -122,7 +131,7 @@ void collapse(World *world) {
 
     // All cells have been collapsed
     if (!foundCell) {
-        return;
+        return 0;
     }
 
     // Get collapsed value

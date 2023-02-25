@@ -1,6 +1,6 @@
 
-#define WORLD_W 35
-#define WORLD_H 20
+#define WORLD_W 10
+#define WORLD_H 10
 #define TILE_COUNT 7
 
 typedef struct Cell {
