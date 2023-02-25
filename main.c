@@ -16,8 +16,13 @@ int main() {
     // Create the world
     World world;
     int isValidWorld;
-
+    int attempts = 0;
     do {
+
+        if (attempts++ == 100) {
+            printf("Invalid tile set.\n");
+            return 1;
+        }
 
         // Initialize all grid potentials to 1
         for (int y = 0; y < WORLD_H; y++) {
@@ -52,6 +57,7 @@ char* getColor(int val) {
     switch (val) {
         case 0: return "\e[106m"; break;
         case 1: return "\e[41m"; break;
+        case 2: return "\e[42m"; break;
     }
 }
 
@@ -119,7 +125,7 @@ int collapse(World *world) {
             }
 
             // Store the lowest entropy cell
-            if (entropy < lowestEntropy && world->map[y][x].collapsedValue == -1 && entropy > 0) {
+            if (entropy < lowestEntropy && world->map[y][x].collapsedValue == -1) {
                 lowestY = y;
                 lowestX = x;
                 lowestEntropy = entropy;
