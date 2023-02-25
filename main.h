@@ -1,45 +1,43 @@
 
-#define WORLD_W 20
-#define WORLD_H 20
-#define TILES 5
+#define WORLD_W 10
+#define WORLD_H 10
+#define TILE_COUNT 5
 
-typedef struct Potential {
-    int options[TILES];
+typedef struct Cell {
+    int options[TILE_COUNT];
     int collapsedValue;
-} Potential;
+} Cell;
 
 typedef struct World {
-    Potential map[WORLD_H][WORLD_W];
+    Cell map[WORLD_H][WORLD_W];
 } World;
 
-typedef char Tile[3][3][7];
-typedef enum TileType {
-    Blank = 0, Up, Down, Left, Right
-} TileType;
+typedef int Tile[3][3];
 
-
-Tile BlankTile = {
-    {"\e[106m", "\e[106m","\e[106m"},
-    {"\e[106m", "\e[106m","\e[106m"},
-    {"\e[106m", "\e[106m","\e[106m"}
-};
-Tile UpTile = {
-    {"\e[106m", "\e[41m","\e[106m"},
-    {"\e[41m", "\e[41m","\e[41m"},
-    {"\e[106m", "\e[106m","\e[106m"}
-};
-Tile DownTile = {
-    {"\e[106m", "\e[106m","\e[106m"},
-    {"\e[41m", "\e[41m","\e[41m"},
-    {"\e[106m", "\e[41m","\e[106m"}
-};
-Tile LeftTile = {
-    {"\e[106m", "\e[41m","\e[106m"},
-    {"\e[41m", "\e[41m","\e[106m"},
-    {"\e[106m", "\e[41m","\e[106m"}
-};
-Tile RightTile = {
-    {"\e[106m", "\e[41m","\e[106m"},
-    {"\e[106m", "\e[41m","\e[41m"},
-    {"\e[106m", "\e[41m","\e[106m"}
+const Tile tiles[TILE_COUNT] = {
+    {
+        {0,0,0},
+        {0,0,0},
+        {0,0,0},
+    },
+    {
+        {0,1,0},
+        {1,1,1},
+        {0,0,0},
+    },
+    {
+        {0,0,0},
+        {1,1,1},
+        {0,1,0},
+    },
+    {
+        {0,1,0},
+        {1,1,0},
+        {0,1,0},
+    },
+    {
+        {0,1,0},
+        {0,1,1},
+        {0,1,0},
+    }
 };

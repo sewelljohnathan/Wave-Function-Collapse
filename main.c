@@ -6,7 +6,7 @@
 
 void collapseLocal(int collapseTarget, int offsetX, int offsetY, World *world);
 void collapse(World *world);
-Tile* getTile(Potential potential);
+char* getColor(int collapseValue);
 
 int main() {
 
@@ -16,47 +16,26 @@ int main() {
     // Create the world
     World world;
     int isValidWorld;
-    do {
 
-        // Initialize all grid potentials to 1
-        for (int y = 0; y < WORLD_H; y++) {
-            for (int x = 0; x < WORLD_W; x++) {
-                for (int i = 0; i < TILES; i++) {
-                    world.map[y][x].options[i] = 1;
-                    world.map[y][x].collapsedValue = -1;
-                }
+    // Initialize all grid potentials to 1
+    for (int y = 0; y < WORLD_H; y++) {
+        for (int x = 0; x < WORLD_W; x++) {
+            for (int i = 0; i < TILE_COUNT; i++) {
+                world.map[y][x].options[i] = 1;
+                world.map[y][x].collapsedValue = -1;
             }
         }
+    }
 
-        // Collapse
-        collapse(&world);
-
-        // Check validity
-        isValidWorld = 1;
-        for (int y = 0; y < WORLD_H; y++) {
-            for (int x = 0; x < WORLD_W; x++) {
-                
-                // Entropy should be 1 for all cells if collapsed correctly
-                int entropy = 0;
-                for (int i = 0; i < TILES; i++) {
-                    entropy += world.map[y][x].options[i];
-                }
-
-                if (entropy == 0) {
-                    isValidWorld = 0;
-                }
-            }
-        }
-
-    } while (!isValidWorld);
+    // Collapse
+    collapse(&world);
 
     // Display
     for (int y = 0; y < WORLD_H; y++) {
         for (int i = 0; i < 3; i++) {
             for (int x = 0; x < WORLD_W; x++) {
-                Tile *tile = getTile(world.map[y][x]);
                 for (int j = 0; j < 3; j++) {
-                    printf("%s  ", (*tile)[i][j]);
+                    printf("%s  ", getColor(tiles[world.map[y][x].collapsedValue][i][j]));
                 }
             }
             printf("\e[0m\n");
@@ -66,130 +45,60 @@ int main() {
     return 0;
 }
 
-Tile* getTile(Potential potential) {
-
-    switch(potential.collapsedValue) {
-        case 0: return &BlankTile; break;
-        case 1: return &UpTile; break;
-        case 2: return &DownTile; break;
-        case 3: return &LeftTile; break;
-        case 4: return &RightTile; break;
+char* getColor(int val) {
+    switch (val) {
+        case 0: return "\e[106m"; break;
+        case 1: return "\e[41m"; break;
     }
-    exit(1);
 }
 
 void collapseLocal(int collapseTarget, int y, int x, World *world) {
 
-    switch (collapseTarget) {
-        case Blank:
-            if (y-1 >= 0) {
-                world->map[y-1][x].options[Down] = 0;
-                world->map[y-1][x].options[Left] = 0;
-                world->map[y-1][x].options[Right] = 0;
+    for (int i = 0; i < TILE_COUNT; i++) {
+
+        if (y-1 >= 0) {
+            if (
+                tiles[i][2][0] != tiles[collapseTarget][0][0] ||
+                tiles[i][2][1] != tiles[collapseTarget][0][1] ||
+                tiles[i][2][2] != tiles[collapseTarget][0][2]
+            ) {
+                world->map[y-1][x].options[i] = 0;
             }
-            if (y+1 <= WORLD_H - 1) {
-                world->map[y+1][x].options[Up] = 0;
-                world->map[y+1][x].options[Left] = 0;
-                world->map[y+1][x].options[Right] = 0;
+        }
+        if (y+1 <= WORLD_H - 1) {
+            if (
+                tiles[i][0][0] != tiles[collapseTarget][2][0] ||
+                tiles[i][0][1] != tiles[collapseTarget][2][1] ||
+                tiles[i][0][2] != tiles[collapseTarget][2][2]
+            ) {
+                world->map[y+1][x].options[i] = 0;
             }
-            if (x-1 >= 0) {
-                world->map[y][x-1].options[Up] = 0;
-                world->map[y][x-1].options[Down] = 0;
-                world->map[y][x-1].options[Right] = 0;
+        }
+        if (x-1 >= 0) {
+            if (
+                tiles[i][0][2] != tiles[collapseTarget][0][0] ||
+                tiles[i][1][2] != tiles[collapseTarget][1][0] ||
+                tiles[i][2][2] != tiles[collapseTarget][2][0]
+            ) {
+                world->map[y][x-1].options[i] = 0;
             }
-            if (x+1 <= WORLD_W - 1) {
-                world->map[y][x+1].options[Up] = 0;
-                world->map[y][x+1].options[Down] = 0;
-                world->map[y][x+1].options[Left] = 0;
+        }
+        if (x+1 <= WORLD_W - 1) {
+            if (
+                tiles[i][0][0] != tiles[collapseTarget][0][2] ||
+                tiles[i][1][0] != tiles[collapseTarget][1][2] ||
+                tiles[i][2][0] != tiles[collapseTarget][2][2]
+            ) {
+                world->map[y][x+1].options[i] = 0;
             }
-        break;
-        case Up:
-            if (y-1 >= 0) {
-                world->map[y-1][x].options[Blank] = 0;
-                world->map[y-1][x].options[Up] = 0;
-            }
-            if (y+1 <= WORLD_H - 1) {
-                world->map[y+1][x].options[Up] = 0;
-                world->map[y+1][x].options[Left] = 0;
-                world->map[y+1][x].options[Right] = 0;
-            }
-            if (x-1 >= 0) {
-                world->map[y][x-1].options[Blank] = 0;
-                world->map[y][x-1].options[Left] = 0;
-            }
-            if (x+1 <= WORLD_W - 1) {
-                world->map[y][x+1].options[Blank] = 0;
-                world->map[y][x+1].options[Right] = 0;
-            }
-        break;
-        case Down:
-            if (y-1 >= 0) {
-                world->map[y-1][x].options[Down] = 0;
-                world->map[y-1][x].options[Left] = 0;
-                world->map[y-1][x].options[Right] = 0;
-            }
-            if (y+1 <= WORLD_H - 1) {
-                world->map[y+1][x].options[Blank] = 0;
-                world->map[y+1][x].options[Down] = 0;
-            }
-            if (x-1 >= 0) {
-                world->map[y][x-1].options[Blank] = 0;
-                world->map[y][x-1].options[Left] = 0;
-            }
-            if (x+1 <= WORLD_W - 1) {
-                world->map[y][x+1].options[Blank] = 0;
-                world->map[y][x+1].options[Right] = 0;
-            }
-        break;
-        case Left:
-            if (y-1 >= 0) {
-                world->map[y-1][x].options[Blank] = 0;
-                world->map[y-1][x].options[Up] = 0;
-            }
-            if (y+1 <= WORLD_H - 1) {
-                world->map[y+1][x].options[Blank] = 0;
-                world->map[y+1][x].options[Down] = 0;
-            }
-            if (x-1 >= 0) {
-                world->map[y][x-1].options[Blank] = 0;
-                world->map[y][x-1].options[Left] = 0;
-            }
-            if (x+1 <= WORLD_W - 1) {
-                world->map[y][x+1].options[Up] = 0;
-                world->map[y][x+1].options[Down] = 0;
-                world->map[y][x+1].options[Left] = 0;
-            }
-        break;
-        case Right:
-            if (y-1 >= 0) {
-                world->map[y-1][x].options[Blank] = 0;
-                world->map[y-1][x].options[Up] = 0;
-            }
-            if (y+1 <= WORLD_W - 1) {
-                world->map[y+1][x].options[Blank] = 0;
-                world->map[y+1][x].options[Down] = 0;
-            }
-            if (x-1 >= 0) {
-                world->map[y][x-1].options[Up] = 0;
-                world->map[y][x-1].options[Down] = 0;
-                world->map[y][x-1].options[Right] = 0;
-            }
-            if (x+1 <= WORLD_W - 1) {
-                world->map[y][x+1].options[Blank] = 0;
-                world->map[y][x+1].options[Right] = 0;
-            }
-        break;
-        default:
-            printf("Error!");
-            exit(1);
-        break;
+        }
     }
 }
 
 void collapse(World *world) {
 
     // Find the lowest entropy cell
-    int lowestEntropy = TILES+1;
+    int lowestEntropy = TILE_COUNT+1;
     int lowestY = 0;
     int lowestX = 0;
     int foundCell = 0;
@@ -197,7 +106,7 @@ void collapse(World *world) {
         for (int x = 0; x < WORLD_W; x++) {
 
             int entropy = 0;
-            for (int i = 0; i < TILES; i++) {
+            for (int i = 0; i < TILE_COUNT; i++) {
                 entropy += world->map[y][x].options[i];   
             }
 
@@ -219,11 +128,11 @@ void collapse(World *world) {
     // Get collapsed value
     int collapseValue;
     do {
-        collapseValue = rand() % TILES;
+        collapseValue = rand() % TILE_COUNT;
     } while (world->map[lowestY][lowestX].options[collapseValue] == 0);
 
     // Collapse
-    for (int i = 0; i < TILES; i++) {
+    for (int i = 0; i < TILE_COUNT; i++) {
         if (i != collapseValue) {
             world->map[lowestY][lowestX].options[i] = 0;
         }
