@@ -1,7 +1,7 @@
 
 #define WORLD_W 30
 #define WORLD_H 20
-#define TILE_COUNT 31
+#define TILE_COUNT 34
 
 typedef struct Cell {
     int options[TILE_COUNT];
@@ -168,6 +168,11 @@ const Tile tiles[] = {
     {
         {0,0,0},
         {3,3,3},
+        {0,0,0},
+    },
+    {
+        {0,0,0},
+        {0,4,0},
         {0,0,0},
     },
 };

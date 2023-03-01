@@ -59,6 +59,7 @@ char* getColor(int val) {
         case 1: return "\e[41m"; break;
         case 2: return "\e[42m"; break;
         case 3: return "\e[45m"; break;
+        case 4: return "\e[43m"; break;
     }
 }
 
